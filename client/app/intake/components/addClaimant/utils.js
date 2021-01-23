@@ -21,8 +21,8 @@ export const schema = yup.object().shape({
   //   }).when('type', {
   // 	  is: 'individual', then: yup.string().required()
   //   }),
-  middleName: yup.string(),
-  lastName: yup.string(), 
+  middleName: yup.string().required(),
+  lastName: yup.string(),
   suffix: yup.string(),
   email: yup.string().email(),
   phoneNumber: yup.string(),

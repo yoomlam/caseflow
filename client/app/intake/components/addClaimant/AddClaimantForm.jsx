@@ -15,6 +15,12 @@ const relationshipOpts = [
   { label: 'Other', value: 'other' },
 ];
 
+export const NestedInputContainer = ({ children }) => {
+  const methods = useFormContext();
+
+  return <IndividualForm {...methods} />;
+};
+
 export const AddClaimantForm = ({ onSubmit }) => {
   const { control, handleSubmit, watch } = useFormContext();
   const watchRelationship = watch('relationship'); /* set in SearchableDropdown */
@@ -33,7 +39,7 @@ export const AddClaimantForm = ({ onSubmit }) => {
         as={SearchableDropdown}
       />
       { watchRelationship?.value === 'other' && <OtherClaimantForm />}
-      { renderIndividualForm && <IndividualForm /> }
+      { renderIndividualForm && <NestedInputContainer /> }
     </form>
   );
 };
@@ -41,4 +47,3 @@ export const AddClaimantForm = ({ onSubmit }) => {
 AddClaimantForm.propTypes = {
   onSubmit: PropTypes.func
 };
-

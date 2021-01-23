@@ -13,6 +13,7 @@ export const AddClaimantPage = () => {
   const { goBack } = useHistory();
 
   const methods = useAddClaimantForm();
+  console.log(methods.formState.isDirty); // make sure formState is read before render to enable the Proxy
   const {
     formState: { isValid },
     handleSubmit,
