@@ -14,7 +14,6 @@ import { RESET_VIRTUAL_HEARING } from './contexts/HearingsFormContext';
 import HEARING_REQUEST_TYPES from '../../constants/HEARING_REQUEST_TYPES';
 import HEARING_DISPOSITION_TYPE_TO_LABEL_MAP from '../../constants/HEARING_DISPOSITION_TYPE_TO_LABEL_MAP';
 
-
 export const isPreviouslyScheduledHearing = (hearing) =>
   hearing?.disposition === HEARING_DISPOSITION_TYPES.postponed ||
   hearing?.disposition === HEARING_DISPOSITION_TYPES.cancelled;
@@ -424,12 +423,20 @@ export const parseVirtualHearingErrors = (msg, hearing) => {
   // Remove the validation string from th error
   const messages = msg.split(':')[1];
 
+  // Split the comma out of the mesage
+  const parsedMessage = messages.split(',');
+
   // Set inline errors for hearing conversion page
-  return messages.split(',').reduce((list, message) => ({
-    ...list,
-    [(/Representative/).test(message) ? 'representativeEmail' : 'appellantEmail']:
-       message.replace('Appellant', getAppellantTitle(hearing?.appellantIsNotVeteran))
-  }), {});
+  if (parsedMessage?.length) {
+    return parsedMessage.reduce((list, message) => ({
+      ...list,
+      [(/Representative/).test(message) ? 'representativeEmail' : 'appellantEmail']:
+        message.replace('Appellant', getAppellantTitle(hearing?.appellantIsNotVeteran))
+    }), {});
+  }
+
+  // If the message has no length, return the parsed message
+  return parsedMessage;
 };
 
 export const regionalOfficeDetails = (key) => REGIONAL_OFFICE_INFORMATION[
@@ -480,7 +487,6 @@ export const formatChangeRequestType = (type) => {
   }
 };
 
-export const dispositionLabel = (disposition) => HEARING_DISPOSITION_TYPE_TO_LABEL_MAP[disposition] ?? 'None'
-
+export const dispositionLabel = (disposition) => HEARING_DISPOSITION_TYPE_TO_LABEL_MAP[disposition] ?? 'None';
 
 /* eslint-enable camelcase */
