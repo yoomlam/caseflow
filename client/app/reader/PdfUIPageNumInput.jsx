@@ -59,7 +59,7 @@ export class PdfUIPageNumInput extends React.PureComponent {
     return (
       <div style={{ display: 'inline-block' }}>
         <TextField
-          maxLength="4"
+          maxLength={4}
           name="page-progress-indicator-input"
           label="Page"
           onChange={this.setPageNumber}
