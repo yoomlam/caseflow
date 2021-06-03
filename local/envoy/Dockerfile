@@ -11,4 +11,4 @@ RUN  apt-get update && \
 WORKDIR $ENVOY_DIR 
 COPY ./local/envoy  $ENVOY_DIR 
 VOLUME $ENVOY_DIR
-CMD  /usr/local/bin/envoy -c $ENVOY_DIR/envoy.json
+CMD  /usr/local/bin/envoy -c $ENVOY_DIR/envoy.yaml
