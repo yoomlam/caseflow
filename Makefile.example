@@ -75,8 +75,12 @@ run-frontend: ## Start just the frontend server
 envoy: ## build docker image for envoy forward proxy rom local/envoy/Dockerfile
 	docker build -t local-envoy ./local/envoy/
 
-run-envoy: ## run local envoy container
-	docker run -d -p 10000:10000 -p 9901:9901 -v ${PWD}/local/envoy:/envoy local-envoy
+envoy-run: ## run local envoy container
+	docker run --name local-envoy \
+		-d -p 10000:10000 -p 9901:9901 -v ${PWD}/local/envoy:/envoy local-envoy
+
+envoy-stop: ## stop envoy container
+	docker stop local-envoy && docker rm local-envoy
 
 envoy-maintenance: ## runs command via admin endpoint /runtime to toggle maintenance mode
 	curl -XPOST "http://localhost:9901/runtime_modify?upstream.maintenance_mode.service_envoyproxy_io=100"
