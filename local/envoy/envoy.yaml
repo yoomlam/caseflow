@@ -1,4 +1,10 @@
 ---
+admin:
+  access_log_path: /tmp/admin_access.log
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
 static_resources:
   listeners:
     - name: va_http_services
@@ -10,12 +16,8 @@ static_resources:
         - filters:
             - name: envoy.filters.network.http_connection_manager
               typed_config:
-                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                 stat_prefix: va_services
-                access_log:
-                  - name: envoy.access_loggers.stdout
-                    typed_config:
-                      '@type': type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
                 http_filters:
                   - name: envoy.filters.http.router
                 route_config:
@@ -31,4 +33,21 @@ static_resources:
                             cluster: service_envoyproxy_io
 
   clusters:
-    - name: "TODO"
+    - name: service_envoyproxy_io
+      type: LOGICAL_DNS
+      connect_timeout: 10s
+      dns_lookup_family: V4_ONLY
+      load_assignment:
+        cluster_name: service_envoyproxy_io
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: www.envoyproxy.io
+                      port_value: 443
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+          sni: www.envoyproxy.ioe_envoyproxy_io

@@ -72,6 +72,15 @@ run-backend: up ready  ## Start rails server without the frontend
 run-frontend: ## Start just the frontend server
 	cd client && yarn run dev:hot
 
+envoy: ## build docker image for envoy forward proxy rom local/envoy/Dockerfile
+	docker build -t local-envoy ./local/envoy/
+
+run-envoy: ## run local envoy container
+	docker run -d -p 10000:10000 -p 9901:9901 -v ${PWD}/local/envoy:/envoy local-envoy
+
+envoy-maintenance: ## runs command via admin endpoint /runtime to toggle maintenance mode
+	curl -XPOST "http://localhost:9901/runtime_modify?upstream.maintenance_mode.service_envoyproxy_io=100"
+
 storybook: ## run Storybook
 	cd client && yarn storybook
 
