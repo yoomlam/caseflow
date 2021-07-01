@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # rubocop:disable Metrics/LineLength
-source ENV["GEM_SERVER_URL"] || "https://rubygems.org"
-
+# source ENV["GEM_SERVER_URL"] || "https://rubygems.org"
+source "https://gemserver.uat.appeals.va.gov"
 # State machine
 gem "aasm", "4.11.0"
 gem "activerecord-import"
