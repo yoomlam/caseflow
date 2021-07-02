@@ -2,7 +2,9 @@
 
 # rubocop:disable Metrics/LineLength
 # source ENV["GEM_SERVER_URL"] || "https://rubygems.org"
-source "http://internal-dsva-appeals-gem-server-uat-2008808362.us-gov-west-1.elb.amazonaws.com"
+
+# source "http://internal-dsva-appeals-gem-server-uat-2008808362.us-gov-west-1.elb.amazonaws.com" # this errors out with same error as my gemserver
+source "http://internal-dsva-appeals-gem-server-prod-1436154138.us-gov-west-1.elb.amazonaws.com"
 # State machine
 gem "aasm", "4.11.0"
 gem "activerecord-import"
