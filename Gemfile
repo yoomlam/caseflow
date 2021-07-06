@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # rubocop:disable Metrics/LineLength
-source "https://rubygems.org"
-
+# source "https://rubygems.org"
+source "https://gemserver.uat.appeals.va.go:3000"
 # State machine
 gem "aasm", "4.11.0"
 gem "activerecord-import"
