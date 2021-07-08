@@ -2,7 +2,7 @@
 
 # rubocop:disable Metrics/LineLength
 # source "https://rubygems.org"
-source "https://gemserver.uat.appeals.va.gov:3000"
+source "http://gemserver.uat.appeals.va.gov:3000"
 # State machine
 gem "aasm", "4.11.0"
 gem "activerecord-import"
