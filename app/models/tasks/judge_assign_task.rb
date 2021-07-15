@@ -21,13 +21,13 @@ class JudgeAssignTask < JudgeTask
     [Constants.TASK_ACTIONS.ASSIGN_TO_ATTORNEY.to_h]
   end
 
+  # We used to create AttorneyTasks as children of JudgeAssignTasks when judges assigned cases to attorney (and later
+  # changed the type of the JudgeAssignTask to JudgeDecisionReviewTask when the attorney completed the AttorneyTask).
+  # Starting on 20 June 2019 (https://github.com/department-of-veterans-affairs/caseflow/pull/11140), we changed to the
+  # current behavior, however we still need to support the old behavior since (as of 15 July 2021) there are still 20
+  # active AttorneyTasks that are children of JudgeAssignTasks.
   def begin_decision_review_phase
     update!(type: JudgeDecisionReviewTask.name)
-
-    # Tell sentry so we know this is still happening. Remove this in a month
-    msg = "Still changing JudgeAssignTask type to JudgeDecisionReviewTask."\
-          "See: https://github.com/department-of-veterans-affairs/caseflow/pull/11140#discussion_r295487938"
-    Raven.capture_message(msg, extra: { application: "tasks" }) if Time.zone.now > Time.zone.local(2019, 9, 1)
   end
 
   def self.label
