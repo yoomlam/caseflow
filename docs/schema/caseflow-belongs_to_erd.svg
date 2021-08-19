@@ -155,7 +155,7 @@
 <polygon fill="#00ff00" stroke="#0000ff" points="1444.97,-1189.87 1444.97,-1235.87 1521.97,-1235.87 1521.97,-1189.87 1444.97,-1189.87"/>
 <text text-anchor="middle" x="1483.47" y="-1220.67" font-family="Times,serif" font-size="14.00" fill="#0000ff">Task</text>
 <polyline fill="none" stroke="#0000ff" points="1444.97,-1212.87 1521.97,-1212.87 "/>
-<text text-anchor="middle" x="1483.47" y="-1197.67" font-family="Times,serif" font-size="14.00" fill="#0000ff">(109 tasks)</text>
+<text text-anchor="middle" x="1483.47" y="-1197.67" font-family="Times,serif" font-size="14.00" fill="#0000ff">(110 tasks)</text>
 </g>
 <!-- Task&#45;&gt;HearingTask -->
 <g id="edge134" class="edge">

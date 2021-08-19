@@ -191,7 +191,7 @@
 <polygon fill="#00ff00" stroke="#0000ff" points="2153.79,-1556 2153.79,-1602 2230.79,-1602 2230.79,-1556 2153.79,-1556"/>
 <text text-anchor="middle" x="2192.29" y="-1586.8" font-family="Times,serif" font-size="14.00" fill="#0000ff">Task</text>
 <polyline fill="none" stroke="#0000ff" points="2153.79,-1579 2230.79,-1579 "/>
-<text text-anchor="middle" x="2192.29" y="-1563.8" font-family="Times,serif" font-size="14.00" fill="#0000ff">(109 tasks)</text>
+<text text-anchor="middle" x="2192.29" y="-1563.8" font-family="Times,serif" font-size="14.00" fill="#0000ff">(110 tasks)</text>
 </g>
 <!-- Task&#45;&gt;HearingTask -->
 <g id="edge134" class="edge">
