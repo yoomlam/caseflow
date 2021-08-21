@@ -45,6 +45,7 @@ jobs:
   #         bin/bundler-audit --update
   #         bin/brakeman -q -w2
 
+# https://docs.knapsackpro.com/2021/how-to-run-ruby-on-rails-tests-on-github-actions-using-rspec
   tests:
     name: Tests
     runs-on: ubuntu-latest
@@ -55,10 +56,16 @@ jobs:
           POSTGRES_DB: caseflow_certification_test
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 5432:5432
-        # ports: ["5432:5432"]
+        # needed because the postgres container does not provide a healthcheck
+        # tmpfs makes DB faster by using RAM
+        options: >-
+          --mount type=tmpfs,destination=/var/lib/postgresql/data
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       redis:
         image: redis:alpine
         ports: ["6379:6379"]
@@ -100,7 +107,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
         run: |
-          bin/rails db:create && bin/rails db:schema:load
+          bundle exec rake db:create db:schema:load db:migrate:redo
+          DB=etl bundle exec rake db:create db:schema:load db:migrate:redo
 
       - name: Create DB schema documentation
         env:
@@ -120,6 +128,8 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
         run: |
+          bundle exec rake assets:precompile
           bundle exec rake db:test:prepare
           DB=etl bundle exec rake db:test:prepare
+          bundle exec rake spec:setup_vacols
           bundle exec rspec
