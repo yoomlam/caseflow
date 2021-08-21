@@ -45,20 +45,31 @@ jobs:
   #         bin/bundler-audit --update
   #         bin/brakeman -q -w2
 
+# https://docs.knapsackpro.com/2021/how-to-run-ruby-on-rails-tests-on-github-actions-using-rspec
   tests:
     name: Tests
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:11
+        image: postgres:11-alpine
         env:
           POSTGRES_DB: caseflow_certification_test
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 5432:5432
-        # ports: ["5432:5432"]
+        # needed because the postgres container does not provide a healthcheck
+        # tmpfs makes DB faster by using RAM
+        options: >-
+          --mount type=tmpfs,destination=/var/lib/postgresql/data
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:alpine
+        ports: ["6379:6379"]
+        # options: --entrypoint redis-server
 
     steps:
       - name: Checkout code
@@ -69,23 +80,23 @@ jobs:
         with:
           bundler-cache: true
 
-      # - name: Setup Node
-      #   uses: actions/setup-node@v1
-      #   with:
-      #     node-version: 10.13.0
-      # - name: Find yarn cache location
-      #   id: yarn-cache
-      #   run: echo "::set-output name=dir::$(yarn cache dir)"
-      # - name: JS package cache
-      #   uses: actions/cache@v1
-      #   with:
-      #     path: ${{ steps.yarn-cache.outputs.dir }}
-      #     key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-yarn-
-      # - name: Install packages
-      #   run: |
-      #     yarn install --pure-lockfile
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.13.0
+      - name: Find yarn cache location
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: JS package cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Install packages
+        run: |
+          cd client && yarn install --pure-lockfile
 
       - name: Setup test database
         env:
@@ -96,16 +107,35 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
         run: |
-          bin/rails db:create && bin/rails db:schema:load
+          bundle exec rake db:create db:schema:load db:migrate:redo
+          DB=etl bundle exec rake db:create db:schema:load db:migrate:redo
 
-      - name: Create DB schema documentation
+      - name: Set up VACOLS
         env:
           RAILS_ENV: test
           POSTGRES_HOST: localhost
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
         run: |
-          env
-          # ERD_BASE="CaseflowRecord" SCHEMA=caseflow bundle exec rake doc:schema
-          make erd-caseflow doc-schema
-          # cat docs/schema/caseflow.csv
+          bundle exec rake spec:setup_vacols
+
+      - name: Prepare to test
+        env:
+          RAILS_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        run: |
+          bundle exec rake assets:precompile
+          bundle exec rake db:test:prepare
+          DB=etl bundle exec rake db:test:prepare
+          bundle exec rake spec:setup_vacols
+
+      - name: Run RSpec
+        env:
+          RAILS_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        run: |
+          bundle exec rspec
