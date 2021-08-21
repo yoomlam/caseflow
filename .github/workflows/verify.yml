@@ -106,5 +106,6 @@ jobs:
           POSTGRES_USER: postgres
         run: |
           env
-          ERD_BASE="CaseflowRecord" SCHEMA=caseflow bundle exec rake doc:csv:schema
-          cat docs/schema/caseflow.csv
+          # ERD_BASE="CaseflowRecord" SCHEMA=caseflow bundle exec rake doc:schema
+          make erd-caseflow doc-schema
+          # cat docs/schema/caseflow.csv
