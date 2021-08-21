@@ -107,5 +107,6 @@ jobs:
         run: |
           env
           # ERD_BASE="CaseflowRecord" SCHEMA=caseflow bundle exec rake doc:schema
+          cp Makefile.example Makefile
           make erd-caseflow doc-schema
           # cat docs/schema/caseflow.csv
