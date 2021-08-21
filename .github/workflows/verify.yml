@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:11
+        image: postgres:11-alpine
         env:
           POSTGRES_DB: caseflow_certification_test
           POSTGRES_PASSWORD: postgres
@@ -121,7 +121,16 @@ jobs:
           ERD_BASE="CaseflowRecord" SCHEMA=caseflow bundle exec rake doc:csv:schema
           cat docs/schema/caseflow.csv
 
-      - name: Run RSpec
+      - name: Set up VACOLS
+        env:
+          RAILS_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        run: |
+          bundle exec rake spec:setup_vacols
+
+      - name: Prepare to test
         env:
           RAILS_ENV: test
           POSTGRES_HOST: localhost
@@ -132,4 +141,12 @@ jobs:
           bundle exec rake db:test:prepare
           DB=etl bundle exec rake db:test:prepare
           bundle exec rake spec:setup_vacols
+
+      - name: Run RSpec
+        env:
+          RAILS_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        run: |
           bundle exec rspec
