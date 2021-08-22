@@ -135,7 +135,7 @@ jobs:
               git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
               git pull "$GIT_REPOSITORY_URL"
           ) || exit 1
-          rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git
+          rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git --exclude '*.pdf'
           echo "Committing and pushing changes"
           (
               cd "$tmp_dir" || exit 1
@@ -144,3 +144,19 @@ jobs:
               git push --set-upstream "$GIT_REPOSITORY_URL" master
           ) || exit 1
 
+      - name: Checkout wiki code
+        uses: actions/checkout@v2
+        with:
+          repository: ${{github.repository}}.wiki
+          path: tmp_wiki
+      - name: Push to wiki
+        env:
+          WIKI_COMMIT_MESSAGE: 'Automatically update to wiki'
+          WIKI_SOURCE_DIR: 'docs'
+        run: |
+          rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git --exclude '*.pdf'
+          cd tmp_wiki
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "$WIKI_COMMIT_MESSAGE" && git push
