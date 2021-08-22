@@ -113,3 +113,10 @@ jobs:
           cp Makefile.example Makefile
           make erd-caseflow doc-schema-caseflow
           # cat docs/schema/caseflow.csv
+
+      - name: Upload docs/schema to Wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@v1
+        with:
+          path: "docs/schema"
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
