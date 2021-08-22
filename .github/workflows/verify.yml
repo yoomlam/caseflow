@@ -116,11 +116,29 @@ jobs:
           # cat docs/schema/caseflow.csv
 
       - name: Upload docs/schema to Wiki
-        uses: SwiftDocOrg/github-wiki-publish-action@v1
-        with:
-          path: "docs/schema"
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          WIKI_COMMIT_MESSAGE: 'Automatically publish wiki'
+          'docs/schema'
         run: |
+          GIT_REPOSITORY_URL="https://${GH_PERSONAL_ACCESS_TOKEN}@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.wiki.git"
+          tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
           env
           ls -al docs/schema
+          echo "Checking out wiki repository"
+          (
+              cd "$tmp_dir" || exit 1
+              git init
+              git config user.name "$GITHUB_ACTOR"
+              git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git pull "$GIT_REPOSITORY_URL"
+          ) || exit 1
+          rsync -av "docs" "$tmp_dir" --exclude .git
+          echo "Committing and pushing changes"
+          (
+              cd "$tmp_dir" || exit 1
+              git add .
+              git commit -m "$WIKI_COMMIT_MESSAGE"
+              git push --set-upstream "$GIT_REPOSITORY_URL" master
+          ) || exit 1
+
