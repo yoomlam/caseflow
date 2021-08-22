@@ -119,7 +119,7 @@ jobs:
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           WIKI_COMMIT_MESSAGE: 'Automatically publish wiki'
-          'docs/schema'
+          WIKI_SOURCE_DIR: 'docs'
         run: |
           GIT_REPOSITORY_URL="https://${GH_PERSONAL_ACCESS_TOKEN}@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.wiki.git"
           tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
@@ -133,7 +133,7 @@ jobs:
               git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
               git pull "$GIT_REPOSITORY_URL"
           ) || exit 1
-          rsync -av "docs" "$tmp_dir" --exclude .git
+          rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git
           echo "Committing and pushing changes"
           (
               cd "$tmp_dir" || exit 1
