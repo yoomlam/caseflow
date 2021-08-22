@@ -1,0 +1,163 @@
+# Adapted from https://boringrails.com/articles/building-a-rails-ci-pipeline-with-github-actions/
+
+name: Verify
+on: [push]
+
+jobs:
+  # linters:
+  #   name: Linters
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: Setup Ruby and install gems
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         bundler-cache: true
+
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 10.13.0
+  #     - name: Find yarn cache location
+  #       id: yarn-cache
+  #       run: echo "::set-output name=dir::$(yarn cache dir)"
+  #     - name: JS package cache
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: ${{ steps.yarn-cache.outputs.dir }}
+  #         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-yarn-
+  #     - name: Install packages
+  #       run: |
+  #         yarn install --pure-lockfile
+
+  #     - name: Run linters
+  #       run: |
+  #         bin/rubocop --parallel
+  #         bin/stylelint
+  #         bin/prettier
+  #         bin/eslint
+  #     - name: Run security checks
+  #       run: |
+  #         bin/bundler-audit --update
+  #         bin/brakeman -q -w2
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_DB: caseflow_certification_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 5432:5432
+        # ports: ["5432:5432"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Ruby and install gems
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      # - name: Setup Node
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 10.13.0
+      # - name: Find yarn cache location
+      #   id: yarn-cache
+      #   run: echo "::set-output name=dir::$(yarn cache dir)"
+      # - name: JS package cache
+      #   uses: actions/cache@v1
+      #   with:
+      #     path: ${{ steps.yarn-cache.outputs.dir }}
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
+      # - name: Install packages
+      #   run: |
+      #     yarn install --pure-lockfile
+
+      - name: Setup test database
+        env:
+          RAILS_ENV: test
+          # PGHOST: localhost
+          # PGUSER: postgres
+          POSTGRES_HOST: localhost
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        run: |
+          bin/rails db:create && bin/rails db:schema:load
+
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v1
+
+      - name: Create DB schema documentation
+        env:
+          RAILS_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        run: |
+          env
+          # ERD_BASE="CaseflowRecord" SCHEMA=caseflow bundle exec rake doc:schema
+          cp Makefile.example Makefile
+          make erd-caseflow doc-schema-caseflow
+          ls -al docs/schema
+          # cat docs/schema/caseflow.csv
+
+      # - name: Upload docs/schema to Wiki
+      #   env:
+      #     GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+      #     WIKI_COMMIT_MESSAGE: 'Automatically publish wiki'
+      #     WIKI_SOURCE_DIR: 'docs'
+      #   run: |
+      #     # https://github.com/SwiftDocOrg/github-wiki-publish-action/blob/v1/entrypoint.sh
+      #     # https://github.com/Andrew-Chen-Wang/github-wiki-action/blob/master/entrypoint.sh
+      #     GIT_REPOSITORY_URL="https://${GH_PERSONAL_ACCESS_TOKEN}@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.wiki.git"
+      #     tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
+      #     env
+      #     ls -al docs/schema
+      #     echo "Checking out wiki repository"
+      #     (
+      #         cd "$tmp_dir" || exit 1
+      #         git init
+      #         git config user.name "$GITHUB_ACTOR"
+      #         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      #         git pull "$GIT_REPOSITORY_URL"
+      #     ) || exit 1
+      #     rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git --exclude '*.pdf'
+      #     echo "Committing and pushing changes"
+      #     (
+      #         cd "$tmp_dir" || exit 1
+      #         git add .
+      #         git commit -m "$WIKI_COMMIT_MESSAGE"
+      #         git push --set-upstream "$GIT_REPOSITORY_URL" master
+      #     ) || exit 1
+
+      - name: Checkout wiki code
+        uses: actions/checkout@v2
+        with:
+          repository: ${{github.repository}}.wiki
+          path: tmp_wiki
+      - name: Push to wiki
+        env:
+          WIKI_COMMIT_MESSAGE: 'Automatically update to wiki'
+          WIKI_SOURCE_DIR: 'docs'
+        run: |
+          # https://github.community/t/how-to-updade-repo-wiki-from-github-actions/121151/7
+          rsync -av "$WIKI_SOURCE_DIR" "tmp_wiki" --exclude .git --exclude '*.pdf'
+          cd tmp_wiki
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "$WIKI_COMMIT_MESSAGE" && git push
