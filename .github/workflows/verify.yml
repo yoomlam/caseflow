@@ -112,6 +112,7 @@ jobs:
           # ERD_BASE="CaseflowRecord" SCHEMA=caseflow bundle exec rake doc:schema
           cp Makefile.example Makefile
           make erd-caseflow doc-schema-caseflow
+          ls -al docs/schema
           # cat docs/schema/caseflow.csv
 
       - name: Upload docs/schema to Wiki
