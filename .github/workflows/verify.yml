@@ -155,7 +155,7 @@ jobs:
           WIKI_SOURCE_DIR: 'docs'
         run: |
           # https://github.community/t/how-to-updade-repo-wiki-from-github-actions/121151/7
-          rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git --exclude '*.pdf'
+          rsync -av "$WIKI_SOURCE_DIR" "tmp_wiki" --exclude .git --exclude '*.pdf'
           cd tmp_wiki
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
