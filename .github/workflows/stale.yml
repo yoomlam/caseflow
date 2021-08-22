@@ -1,8 +1,8 @@
 name: Mark stale issues and pull requests
-
-on:
-  schedule:
-  - cron: '19 8 * * *'
+on: [push]
+# on:
+#   schedule:
+#   - cron: '19 8 * * *'
 
 jobs:
   stale:
