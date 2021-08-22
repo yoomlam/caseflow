@@ -121,6 +121,8 @@ jobs:
           WIKI_COMMIT_MESSAGE: 'Automatically publish wiki'
           WIKI_SOURCE_DIR: 'docs'
         run: |
+          # https://github.com/SwiftDocOrg/github-wiki-publish-action/blob/v1/entrypoint.sh
+          # https://github.com/Andrew-Chen-Wang/github-wiki-action/blob/master/entrypoint.sh
           GIT_REPOSITORY_URL="https://${GH_PERSONAL_ACCESS_TOKEN}@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.wiki.git"
           tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
           env
