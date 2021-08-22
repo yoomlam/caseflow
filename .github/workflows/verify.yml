@@ -115,34 +115,34 @@ jobs:
           ls -al docs/schema
           # cat docs/schema/caseflow.csv
 
-      - name: Upload docs/schema to Wiki
-        env:
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          WIKI_COMMIT_MESSAGE: 'Automatically publish wiki'
-          WIKI_SOURCE_DIR: 'docs'
-        run: |
-          # https://github.com/SwiftDocOrg/github-wiki-publish-action/blob/v1/entrypoint.sh
-          # https://github.com/Andrew-Chen-Wang/github-wiki-action/blob/master/entrypoint.sh
-          GIT_REPOSITORY_URL="https://${GH_PERSONAL_ACCESS_TOKEN}@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.wiki.git"
-          tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
-          env
-          ls -al docs/schema
-          echo "Checking out wiki repository"
-          (
-              cd "$tmp_dir" || exit 1
-              git init
-              git config user.name "$GITHUB_ACTOR"
-              git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-              git pull "$GIT_REPOSITORY_URL"
-          ) || exit 1
-          rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git --exclude '*.pdf'
-          echo "Committing and pushing changes"
-          (
-              cd "$tmp_dir" || exit 1
-              git add .
-              git commit -m "$WIKI_COMMIT_MESSAGE"
-              git push --set-upstream "$GIT_REPOSITORY_URL" master
-          ) || exit 1
+      # - name: Upload docs/schema to Wiki
+      #   env:
+      #     GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+      #     WIKI_COMMIT_MESSAGE: 'Automatically publish wiki'
+      #     WIKI_SOURCE_DIR: 'docs'
+      #   run: |
+      #     # https://github.com/SwiftDocOrg/github-wiki-publish-action/blob/v1/entrypoint.sh
+      #     # https://github.com/Andrew-Chen-Wang/github-wiki-action/blob/master/entrypoint.sh
+      #     GIT_REPOSITORY_URL="https://${GH_PERSONAL_ACCESS_TOKEN}@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.wiki.git"
+      #     tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
+      #     env
+      #     ls -al docs/schema
+      #     echo "Checking out wiki repository"
+      #     (
+      #         cd "$tmp_dir" || exit 1
+      #         git init
+      #         git config user.name "$GITHUB_ACTOR"
+      #         git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      #         git pull "$GIT_REPOSITORY_URL"
+      #     ) || exit 1
+      #     rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git --exclude '*.pdf'
+      #     echo "Committing and pushing changes"
+      #     (
+      #         cd "$tmp_dir" || exit 1
+      #         git add .
+      #         git commit -m "$WIKI_COMMIT_MESSAGE"
+      #         git push --set-upstream "$GIT_REPOSITORY_URL" master
+      #     ) || exit 1
 
       - name: Checkout wiki code
         uses: actions/checkout@v2
@@ -154,6 +154,7 @@ jobs:
           WIKI_COMMIT_MESSAGE: 'Automatically update to wiki'
           WIKI_SOURCE_DIR: 'docs'
         run: |
+          # https://github.community/t/how-to-updade-repo-wiki-from-github-actions/121151/7
           rsync -av "$WIKI_SOURCE_DIR" "$tmp_dir" --exclude .git --exclude '*.pdf'
           cd tmp_wiki
           git config --local user.email "action@github.com"
