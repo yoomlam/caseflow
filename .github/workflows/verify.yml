@@ -121,3 +121,6 @@ jobs:
           path: "docs/schema"
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+        run: |
+          env
+          ls -al docs/schema
